@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Application</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ddd;
+        }
+
+        .avatar-small {
+            width: 30px;
+            height: 30px;
+        }
+
+        .avatar-large {
+            width: 80px;
+            height: 80px;
+        }
+
+        .status-online {
+            color: #28a745;
+            font-size: 0.8rem;
+        }
+
+        .status-offline {
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+
+        .message-avatar {
+            margin-right: 10px;
+        }
+
+        .upload-avatar-btn {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .upload-avatar-btn input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .file-upload-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .file-upload-btn {
+            cursor: pointer;
+            padding: 0.5rem;
+            font-size: 1.2rem;
+            background: none;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-upload-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .selected-file-info {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 5px;
+            margin-bottom: 0.5rem;
+            border: 1px solid #dee2e6;
+        }
+
+        .file-preview {
+            margin-top: 0.5rem;
+            max-width: 200px;
+        }
+
+        .file-preview img {
+            max-width: 100%;
+            max-height: 150px;
+            border-radius: 5px;
+        }
+
+        .message-file {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .file-icon {
+            font-size: 1.5rem;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: bold;
+            word-break: break-all;
+        }
+
+        .file-size {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .download-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 0.25rem 0.5rem;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.8rem;
+        }
+
+        .message-file.image-file {
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .message-file.image-file img {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        /* Стили для создания группы */
+        .participants-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .participant-checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+        }
+
+        .participant-checkbox-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .participant-checkbox-item:last-child {
+            border-bottom: none;
+        }
+
+        .participant-checkbox-item input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .participant-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .selected-participants {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+        }
+
+        .selected-participant-item {
+            display: inline-flex;
+            align-items: center;
+            background-color: #e9ecef;
+            padding: 5px 10px;
+            margin: 3px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .selected-participant-remove {
+            margin-left: 5px;
+            cursor: pointer;
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .group-chat-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .group-chat-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .group-avatar {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        .group-info {
+            flex: 1;
+        }
+
+        .group-name {
+            font-weight: bold;
+        }
+
+        .group-members {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .message-item {
+            margin: 10px 0;
+            padding: 8px 12px;
+            border-radius: 10px;
+            max-width: 70%;
+        }
+
+        .message-item.own {
+            background-color: #e3f2fd;
+            margin-left: auto;
+            margin-right: 10px;
+        }
+
+        .message-item.other {
+            background-color: #f5f5f5;
+            margin-left: 10px;
+        }
+
+        .message-content-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .message-avatar {
+            flex-shrink: 0;
+        }
+
+        .message-sender {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #667eea;
+            margin-right: 8px;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        .message-file {
+            margin-top: 8px;
+            padding: 8px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+<div class="chat-container">
+    <!-- Боковая панель -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>💬 Чаты</h2>
+            <div class="user-info">
+                <div class="user-avatar-container">
+                    <img id="userAvatar" class="avatar" th:src="${user.profileImageUrl}"
+                         src="/images/default-avatar.png" alt="avatar">
+                    <div class="upload-avatar-btn">
+                        <button class="btn-small">📷</button>
+                        <input type="file" id="avatarUpload" accept=".jpg,.jpeg,.png" style="display: none;">
+                    </div>
+                </div>
+                <div class="user-details">
+                    <span th:text="${username}">Пользователь</span>
+                    <div id="userStatus" class="status-online">🟢 В сети</div>
+                </div>
+                <div class="user-actions">
+                    <button onclick="showChangePasswordModal()" class="btn-secondary" title="Сменить пароль">🔑</button>
+                    <button onclick="logout()" class="btn-secondary">🚪 Выйти</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Поиск пользователей -->
+        <div class="search-section">
+            <input type="text" id="userSearch" placeholder="🔍 Поиск пользователей..."
+                   oninput="searchUsers(this.value)">
+            <div id="searchResults" class="search-results"></div>
+        </div>
+
+        <!-- Входящие запросы -->
+        <div class="requests-section">
+            <h4>📨 Запросы в друзья</h4>
+            <div id="friendRequests" class="requests-list"></div>
+        </div>
+
+        <!-- Список контактов -->
+        <div class="contacts-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0;">👥 Мои контакты</h3>
+                <button onclick="showCreateGroupModal()" class="btn-small" title="Создать группу">
+                    👥 Создать группу
+                </button>
+            </div>
+            <div id="contactsList" class="contacts-list">
+                <div class="no-contacts">Контактов пока нет</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Основная область чата -->
+    <div class="chat-area">
+        <div class="no-chat-selected">
+            <h2>Добро пожаловать в чат!</h2>
+            <p>Выберите контакт для начала общения</p>
+            <p><em>Для начала найдите пользователей через поиск и добавьте их в контакты</em></p>
+        </div>
+
+        <!-- Область активного чата (пока скрыта) -->
+        <div id="activeChat" class="chat-window hidden">
+            <div class="chat-header">
+                <h3 id="chatTitle">Имя пользователя</h3>
+                <div id="chatParticipants" class="chat-participants"></div>
+            </div>
+
+            <div id="messagesContainer" class="messages-container">
+                <!-- Сообщения будут здесь -->
+            </div>
+
+            <div class="message-input">
+                <div class="file-upload-container">
+                    <label for="fileUpload" class="file-upload-btn" title="Прикрепить файл">
+                        📎
+                    </label>
+                    <input type="file" id="fileUpload" style="display: none;">
+                </div>
+
+                <input type="text" id="messageInput" placeholder="Введите сообщение..." disabled>
+
+                <div class="selected-file-info" id="selectedFileInfo" style="display: none;">
+                    <span id="selectedFileName"></span>
+                    <button type="button" onclick="removeSelectedFile()" class="btn-small">×</button>
+                </div>
+
+                <button id="sendMessageBtn" disabled>📤 Отправить</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно смены пароля -->
+<div id="changePasswordModal" class="modal hidden">
+    <div class="modal-content">
+        <h3>🔑 Смена пароля</h3>
+
+        <div class="form-group">
+            <label for="currentPassword">Текущий пароль:</label>
+            <input type="password" id="currentPassword" placeholder="Введите текущий пароль">
+        </div>
+
+        <div class="form-group">
+            <label for="newPassword">Новый пароль:</label>
+            <input type="password" id="newPassword" placeholder="Введите новый пароль" minlength="3">
+        </div>
+
+        <div class="form-group">
+            <label for="confirmNewPassword">Подтвердите новый пароль:</label>
+            <input type="password" id="confirmNewPassword" placeholder="Повторите новый пароль">
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" class="btn-secondary" onclick="hideChangePasswordModal()">Отмена</button>
+            <button type="button" class="btn-primary" onclick="changePassword()">Сменить пароль</button>
+        </div>
+
+        <div id="changePasswordMessage" class="message"></div>
+    </div>
+</div>
+
+<!-- Модальное окно создания группы -->
+<div id="createGroupModal" class="modal hidden">
+    <div class="modal-content">
+        <h3>👥 Создать новую группу</h3>
+
+        <div class="form-group">
+            <label for="groupName">Название группы:</label>
+            <input type="text" id="groupName" placeholder="Введите название группы" required>
+        </div>
+
+        <div class="form-group">
+            <label>Выберите участников из контактов:</label>
+            <div id="groupParticipantsList" class="participants-list">
+                <!-- Список контактов с чекбоксами -->
+            </div>
+        </div>
+
+        <div class="selected-participants" id="selectedParticipants">
+            <h4>Выбранные участники (<span id="selectedCount">0</span>):</h4>
+            <div id="selectedParticipantsList"></div>
+        </div>
+
+        <div class="modal-actions">
+            <button type="button" class="btn-secondary" onclick="hideCreateGroupModal()">Отмена</button>
+            <button type="button" class="btn-primary" onclick="createGroup()">Создать группу</button>
+        </div>
+
+        <div id="createGroupMessage" class="message"></div>
+    </div>
+</div>
+
+<script>
+    // ==================== ФУНКЦИИ СОЗДАНИЯ ГРУППЫ ====================
+    let selectedParticipants = new Map();
+
+    function showCreateGroupModal() {
+        console.log("🟢 Кнопка 'Создать группу' нажата!");
+
+        const modal = document.getElementById('createGroupModal');
+        if (!modal) {
+            console.error("❌ Модальное окно не найдено!");
+            alert("Ошибка: модальное окно создания группы не найдено");
+            return;
+        }
+
+        // Очищаем форму
+        document.getElementById('groupName').value = '';
+
+        // Загружаем контакты
+        loadContactsForGroup();
+
+        // Показываем модальное окно
+        modal.classList.remove('hidden');
+        console.log("✅ Модальное окно показано");
+    }
+
+    function hideCreateGroupModal() {
+        const modal = document.getElementById('createGroupModal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    function loadContactsForGroup() {
+        const contactsList = document.getElementById('groupParticipantsList');
+        const selectedList = document.getElementById('selectedParticipantsList');
+        const selectedCount = document.getElementById('selectedCount');
+
+        if (!contactsList) {
+            console.error("❌ Контейнер для контактов не найден!");
+            return;
+        }
+
+        // Очищаем старый список
+        selectedParticipants.clear();
+        if (selectedList) selectedList.innerHTML = '';
+        if (selectedCount) selectedCount.textContent = '0';
+
+        contactsList.innerHTML = '<div class="loading">Загрузка контактов...</div>';
+
+        fetch('/api/contacts')
+            .then(response => {
+                if (!response.ok) throw new Error('Ошибка сети');
+                return response.json();
+            })
+            .then(contacts => {
+                if (contacts.length === 0) {
+                    contactsList.innerHTML = '<div class="no-contacts">У вас нет контактов</div>';
+                    return;
+                }
+
+                contactsList.innerHTML = contacts.map(contact => `
+                    <div class="participant-checkbox-item" data-user-id="${contact.id}">
+                        <input type="checkbox" id="contact_${contact.id}"
+                               onchange="toggleParticipant(${contact.id}, '${contact.username.replace(/'/g, "\\'")}')">
+                        <div class="participant-info">
+                            <img src="${contact.profileImageUrl || '/images/default-avatar.png'}"
+                                 class="avatar avatar-small" alt="${contact.username}">
+                            <div style="margin-left: 10px;">
+                                <div>${contact.username}</div>
+                                <div class="contact-status">${contact.online ? '🟢 В сети' : '⚫ Не в сети'}</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            })
+            .catch(error => {
+                console.error('❌ Ошибка загрузки контактов:', error);
+                contactsList.innerHTML = '<div class="no-contacts">❌ Ошибка загрузки контактов</div>';
+            });
+    }
+
+    function toggleParticipant(userId, username) {
+        const checkbox = document.getElementById(`contact_${userId}`);
+        const selectedList = document.getElementById('selectedParticipantsList');
+        const selectedCount = document.getElementById('selectedCount');
+
+        if (!checkbox || !selectedList || !selectedCount) return;
+
+        if (checkbox.checked) {
+            // Добавляем участника
+            selectedParticipants.set(userId, username);
+
+            const participantHTML = `
+                <div class="selected-participant-item" id="selected_${userId}">
+                    ${username}
+                    <span class="selected-participant-remove" onclick="removeParticipant(${userId})">×</span>
+                </div>
+            `;
+
+            selectedList.insertAdjacentHTML('beforeend', participantHTML);
+        } else {
+            // Удаляем участника
+            removeParticipant(userId);
+        }
+
+        // Обновляем счетчик
+        selectedCount.textContent = selectedParticipants.size;
+    }
+
+    function removeParticipant(userId) {
+        selectedParticipants.delete(userId);
+
+        const selectedItem = document.getElementById(`selected_${userId}`);
+        if (selectedItem) selectedItem.remove();
+
+        const checkbox = document.getElementById(`contact_${userId}`);
+        if (checkbox) checkbox.checked = false;
+
+        const selectedCount = document.getElementById('selectedCount');
+        if (selectedCount) selectedCount.textContent = selectedParticipants.size;
+    }
+
+    async function createGroup() {
+        const groupName = document.getElementById('groupName')?.value.trim();
+        const messageElement = document.getElementById('createGroupMessage');
+
+        if (!groupName) {
+            showGroupMessage('Введите название группы', 'error');
+            return;
+        }
+
+        if (selectedParticipants.size < 2) {
+            showGroupMessage('Выберите минимум 2 участника', 'error');
+            return;
+        }
+
+        const participantIds = Array.from(selectedParticipants.keys());
+
+        try {
+            const response = await fetch('/api/chats/group', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: groupName,
+                    participantIds: participantIds
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showGroupMessage('✅ Группа успешно создана!', 'success');
+
+                // Закрываем модальное окно через 2 секунды
+                setTimeout(() => {
+                    hideCreateGroupModal();
+
+                    // Перезагружаем страницу чтобы обновить список чатов
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                }, 2000);
+
+            } else {
+                showGroupMessage('❌ ' + (data.message || 'Ошибка создания группы'), 'error');
+            }
+        } catch (error) {
+            console.error('💥 Ошибка создания группы:', error);
+            showGroupMessage('💥 Ошибка соединения с сервером', 'error');
+        }
+    }
+
+    function showGroupMessage(message, type) {
+        const element = document.getElementById('createGroupMessage');
+        if (element) {
+            element.textContent = message;
+            element.className = `message ${type}`;
+        }
+    }
+
+    // Делаем функции доступными глобально
+    window.showCreateGroupModal = showCreateGroupModal;
+    window.hideCreateGroupModal = hideCreateGroupModal;
+    window.toggleParticipant = toggleParticipant;
+    window.removeParticipant = removeParticipant;
+    window.createGroup = createGroup;
+</script>
+
+<!-- Подключение общего JS файла с остальными функциями -->
+<script src="/js/chat.js"></script>
+
+</body>
+</html>
