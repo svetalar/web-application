@@ -19,6 +19,7 @@ public class AuthController {
             if (user != null) {
                 System.out.println("✅ Успешный вход: " + username + " (роль: " + user.getRole() + ")");
                 DatabaseService.updateUserOnlineStatus(user.getId(), true);
+                user.setOnline(true);
                 ctx.sessionAttribute("user", user);
                 ctx.json(Map.of("success", true, "role", user.getRole()));
             } else {

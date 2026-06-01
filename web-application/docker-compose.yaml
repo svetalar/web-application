@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:16
+    container_name: chatapp-db
+    environment:
+      POSTGRES_USER: useradmin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: chat_app
+      TZ: Europe/Moscow
+    command: ["postgres", "-c", "timezone=Europe/Moscow"]
+    ports:
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U useradmin -d chat_app"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chatapp-app
+    environment:
+      TZ: Europe/Moscow
+    network_mode: "service:db"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - uploads:/app/uploads
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  uploads:

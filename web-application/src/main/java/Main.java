@@ -105,19 +105,6 @@ public class Main {
             System.out.println("🎉 Сервер запущен!");
             System.out.println("📍 Локальный: http://localhost:" + port);
 
-            java.util.Enumeration<java.net.NetworkInterface> interfaces = java.net.NetworkInterface.getNetworkInterfaces();
-            while (interfaces.hasMoreElements()) {
-                java.net.NetworkInterface iface = interfaces.nextElement();
-                if (iface.isUp() && !iface.isLoopback()) {
-                    java.util.Enumeration<java.net.InetAddress> addresses = iface.getInetAddresses();
-                    while (addresses.hasMoreElements()) {
-                        java.net.InetAddress addr = addresses.nextElement();
-                        if (addr instanceof java.net.Inet4Address) {
-                            System.out.println("🌐 Сетевой: http://" + addr.getHostAddress() + ":" + port);
-                        }
-                    }
-                }
-            }
         } catch (Exception e) {
             System.out.println("❌ Ошибка сети: " + e.getMessage());
         }
