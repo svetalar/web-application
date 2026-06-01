@@ -32,9 +32,9 @@ docker compose up --build
 ### Запуск в фоне
 
 ```bash
-sudo docker compose up --build -d   # старт в фоне
-sudo docker compose logs -f         # смотреть логи
-sudo docker compose down            # остановить
+docker compose up --build -d   # старт в фоне
+docker compose logs -f         # смотреть логи
+docker compose down            # остановить
 ```
 
 ---
