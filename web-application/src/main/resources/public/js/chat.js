@@ -701,6 +701,7 @@ function openImageModal(src, alt) {
 }
 
 // Запуск автообновления сообщений
+// Запуск автообновления сообщений (улучшенная версия)
 function startMessagePolling(chatId) {
     // Останавливаем предыдущий интервал
     if (messagePollingInterval) {
@@ -709,11 +710,20 @@ function startMessagePolling(chatId) {
 
     // Запускаем новый интервал
     messagePollingInterval = setInterval(async () => {
-        if (currentChat && currentChat.id === chatId) {
+        // Обновляем только если страница видна и чат активен
+        if (currentChat && currentChat.id === chatId && document.visibilityState === 'visible') {
             await loadChatMessages(chatId);
         }
-    }, 2000); // Обновляем каждые 2 секунды
+    }, 5000);
 }
+
+// Слушаем событие видимости страницы
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible' && currentChat) {
+        loadChatMessages(currentChat.id);
+    }
+});
+
 
 // Остановка автообновления
 function stopMessagePolling() {
